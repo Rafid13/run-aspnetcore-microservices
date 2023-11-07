@@ -1,0 +1,52 @@
+#####################################################################
+############################# Services ##############################
+#####################################################################
+
+########## Database ##########
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: orderdb
+spec:
+  selector:
+    app: orderdb
+  ports:
+  - port: 40030
+    targetPort: 1433
+
+
+
+
+
+#####################################################################
+########################### Deployments #############################
+#####################################################################
+
+########## Database ##########
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: orderdb
+spec:
+  selector:
+    matchLabels:
+      app: orderdb
+  template:
+    metadata:
+      labels:
+        app: orderdb
+    spec:
+      containers:
+      - name: orderdb
+        image: mcr.microsoft.com/mssql/server:2017-latest      
+        ports:
+        - containerPort: 1433
+        env:
+        - name: SA_PASSWORD
+          value: SwN12345678
+        - name: ACCEPT_EULA
+          value: "Y"
+        

@@ -1,0 +1,53 @@
+#####################################################################
+############################# Services ##############################
+#####################################################################
+
+########## Database ##########
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: discountdb
+spec:
+  selector:
+    app: discountdb
+  ports:
+  - port: 40020
+    targetPort: 5432
+
+
+
+
+
+#####################################################################
+########################### Deployments #############################
+#####################################################################
+
+########## Database ##########
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: discountdb
+spec:
+  selector:
+    matchLabels:
+      app: discountdb
+  template:
+    metadata:
+      labels:
+        app: discountdb
+    spec:
+      containers:
+      - name: discountdb
+        image: postgres       
+        ports:
+        - containerPort: 5432
+        env:
+        - name: POSTGRES_USER
+          value: admin
+        - name: POSTGRES_PASSWORD
+          value: admin1234
+        - name: POSTGRES_DB
+          value: DiscountDb

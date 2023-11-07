@@ -1,0 +1,90 @@
+#####################################################################
+############################# Services ##############################
+#####################################################################
+
+
+############### Database ###############
+apiVersion: v1
+kind: Service
+metadata:
+  name: catalogdb
+spec:
+  selector:
+    app: catalogdb
+  ports:
+  - port: 30010
+    targetPort: 27017
+
+  
+
+############### Api ###############
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: catalogapi
+spec:
+  selector:
+    app: catalogapi
+  ports:
+  - port: 30000
+    targetPort: 80
+    nodePort: 30000
+  type: NodePort  
+
+  
+
+
+#####################################################################
+########################### Deployments #############################
+#####################################################################
+
+
+############### Database ###############
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: catalogdb
+spec:
+  selector:
+    matchLabels:
+      app: catalogdb
+  template:
+    metadata:
+      labels:
+        app: catalogdb
+    spec:
+      containers:
+      - name: catalogdb
+        image: mongo
+        ports:
+        - containerPort: 27017
+
+############### Api ###############
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: catalogapi
+spec:
+  selector:
+    matchLabels:
+      app: catalogapi
+  template:
+    metadata:
+      labels:
+        app: catalogapi
+    spec:
+      containers:
+      - name: catalogapi
+        image: catalogapi:latest
+        imagePullPolicy: Never
+        ports:
+        - containerPort: 80
+        env: 
+        - name: ASPNETCORE_ENVIRONMENT
+          value: Development
+        - name: DatabaseSettings__ConnectionString
+          value: mongodb://catalogdb.default.svc.cluster.local:30010
