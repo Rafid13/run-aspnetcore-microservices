@@ -1,0 +1,120 @@
+#####################################################################
+############################ Services ###############################
+#####################################################################
+
+############### AspNet Run Basics ###############
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: aspnetrunbasics
+spec:
+  selector:
+    app: aspnetrunbasics
+  ports:
+  - port: 80
+    targetPort: 80
+    nodePort: 30050
+  type: NodePort
+
+
+############### webstatus ###############
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: webstatus
+spec:
+  selector:
+    app: webstatus
+  ports:
+  - port: 80
+    targetPort: 80
+    nodePort: 30060
+  type: NodePort
+
+
+
+
+#####################################################################
+########################### Deployments #############################
+#####################################################################
+
+
+########## Asp Net Run Basics ##########
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: aspnetrunbasics
+spec:
+  selector:
+    matchLabels:
+      app: aspnetrunbasics
+  template:
+    metadata:
+      labels:
+        app: aspnetrunbasics
+    spec:
+      containers:
+      - name: aspnetrunbasics
+        image: aspnetrunbasics:latest
+        imagePullPolicy: Never                           
+        env:
+        - name: ASPNETCORE_ENVIRONMENT
+          value: Development
+        - name: ApiSettings__GatewayAddress
+          value: http://ocelotapigw/
+        ports:
+        - containerPort: 80
+
+########## webstatus ##########
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: webstatus
+spec:
+  selector:
+    matchLabels:
+      app: webstatus
+  template:
+    metadata:
+      labels:
+        app: webstatus
+    spec:
+      containers:
+      - name: webstatus
+        image: webstatus:latest
+        imagePullPolicy: Never           
+        env:
+        - name: ASPNETCORE_ENVIRONMENT
+          value: Development
+        - name: HealthChecksUI__HealthChecks__0__Name
+          value: "Catalog Health Check"
+        - name: HealthChecksUI__HealthChecks__0__Uri
+          value: http://catalogapi/hc
+        - name: HealthChecksUI__HealthChecks__1__Name
+          value: "Basket Health Check"
+        - name: HealthChecksUI__HealthChecks__1__Uri
+          value: http://basketapi/hc
+        - name: HealthChecksUI__HealthChecks__2__Name
+          value: "Discount Health Check"
+        - name: HealthChecksUI__HealthChecks__2__Uri
+          value: http://discountapi/hc
+        - name: HealthChecksUI__HealthChecks__3__Name
+          value: "Ordering Health Check"
+        - name: HealthChecksUI__HealthChecks__3__Uri
+          value: http://orderapi/hc
+        - name: HealthChecksUI__HealthChecks__4__Name
+          value: "Shopping Aggregator Health Check"
+        - name: HealthChecksUI__HealthChecks__4__Uri
+          value: http://shoppingaggregator/hc
+        - name: HealthChecksUI__HealthChecks__5__Name
+          value: "AspnetRunBasics WebMVC Health Check"
+        - name: HealthChecksUI__HealthChecks__5__Uri
+          value: http://aspnetrunbasics/hc                                                                                            
+        ports:
+        - containerPort: 80

@@ -12,7 +12,7 @@ spec:
   selector:
     app: catalogdb
   ports:
-  - port: 30010
+  - port: 27017
     targetPort: 27017
 
   
@@ -27,7 +27,7 @@ spec:
   selector:
     app: catalogapi
   ports:
-  - port: 30000
+  - port: 80
     targetPort: 80
     nodePort: 30000
   type: NodePort  
@@ -87,4 +87,4 @@ spec:
         - name: ASPNETCORE_ENVIRONMENT
           value: Development
         - name: DatabaseSettings__ConnectionString
-          value: mongodb://catalogdb.default.svc.cluster.local:30010
+          value: mongodb://catalogdb:27017

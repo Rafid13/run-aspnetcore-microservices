@@ -1,52 +1,48 @@
 #####################################################################
-############################# Services ##############################
+############################ Services ###############################
 #####################################################################
 
-########## Database ##########
-
+############### Api GW ###############
+---
 apiVersion: v1
 kind: Service
 metadata:
-  name: orderdb
+  name: ocelotapigw
 spec:
   selector:
-    app: orderdb
+    app: ocelotapigw
   ports:
-  - port: 40030
-    targetPort: 1433
-
-
-
+  - port: 80
+    targetPort: 80
 
 
 #####################################################################
 ########################### Deployments #############################
 #####################################################################
 
-########## Database ##########
+########## Api GW ##########
 ---
 
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: orderdb
+  name: ocelotapigw
 spec:
   selector:
     matchLabels:
-      app: orderdb
+      app: ocelotapigw
   template:
     metadata:
       labels:
-        app: orderdb
+        app: ocelotapigw
     spec:
       containers:
-      - name: orderdb
-        image: mcr.microsoft.com/mssql/server:2017-latest      
-        ports:
-        - containerPort: 1433
+      - name: ocelotapigw
+        image: ocelotapigw:latest
+        imagePullPolicy: Never           
         env:
-        - name: SA_PASSWORD
-          value: SwN12345678
-        - name: ACCEPT_EULA
-          value: "Y"
-        
+        - name: ASPNETCORE_ENVIRONMENT
+          value: Development
+        ports:
+        - containerPort: 80
+

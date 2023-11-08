@@ -1,0 +1,137 @@
+#####################################################################
+############################# Services ##############################
+#####################################################################
+
+########## Database ##########
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: discountdb
+spec:
+  selector:
+    app: discountdb
+  ports:
+  - port: 5432
+    targetPort: 5432
+
+############### Grpc ###############
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: discountgrpc
+spec:
+  selector:
+    app: discountgrpc
+  ports:
+  - port: 80
+    targetPort: 80
+
+############### Api ###############
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: discountapi
+spec:
+  selector:
+    app: discountapi
+  ports:
+  - port: 80
+    targetPort: 80
+    nodePort: 30020
+  type: NodePort
+
+
+
+#####################################################################
+########################### Deployments #############################
+#####################################################################
+
+########## Database ##########
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: discountdb
+spec:
+  selector:
+    matchLabels:
+      app: discountdb
+  template:
+    metadata:
+      labels:
+        app: discountdb
+    spec:
+      containers:
+      - name: discountdb
+        image: postgres       
+        ports:
+        - containerPort: 5432
+        env:
+        - name: POSTGRES_USER
+          value: admin
+        - name: POSTGRES_PASSWORD
+          value: admin1234
+        - name: POSTGRES_DB
+          value: DiscountDb
+
+
+
+############### Grpc ###############
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: discountgrpc
+spec:
+  selector:
+    matchLabels:
+      app: discountgrpc
+  template:
+    metadata:
+      labels:
+        app: discountgrpc
+    spec:
+      containers:
+      - name: discountgrpc
+        image: discountgrpc:latest
+        imagePullPolicy: Never
+        env: 
+        - name: ASPNETCORE_ENVIRONMENT
+          value: Development
+        - name: DatabaseSettings__ConnectionString
+          value: "Server=discountdb;Port=5432;Database=DiscountDb;User Id=admin;Password=admin1234;"  
+        
+        ports:
+        - containerPort: 80
+
+############### Api ###############
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: discountapi
+spec:
+  selector:
+    matchLabels:
+      app: discountapi
+  template:
+    metadata:
+      labels:
+        app: discountapi
+    spec:
+      containers:
+      - name: discountapi
+        image: discountapi:latest
+        imagePullPolicy: Never
+        env: 
+        - name: ASPNETCORE_ENVIRONMENT
+          value: Development
+        - name: DatabaseSettings__ConnectionString
+          value: "Server=discountdb;Port=5432;Database=DiscountDb;User Id=admin;Password=admin1234;"  
+        
+        ports:
+        - containerPort: 80

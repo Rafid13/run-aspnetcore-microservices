@@ -1,0 +1,96 @@
+#####################################################################
+############################# Services ##############################
+#####################################################################
+
+########## Database ##########
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: orderdb
+spec:
+  selector:
+    app: orderdb
+  ports:
+  - port: 1433
+    targetPort: 1433
+
+############### Api ###############
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: orderapi
+spec:
+  selector:
+    app: orderapi
+  ports:
+  - port: 80
+    targetPort: 80
+    nodePort: 30030
+  type: NodePort
+
+
+
+
+
+#####################################################################
+########################### Deployments #############################
+#####################################################################
+
+########## Database ##########
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: orderdb
+spec:
+  selector:
+    matchLabels:
+      app: orderdb
+  template:
+    metadata:
+      labels:
+        app: orderdb
+    spec:
+      containers:
+      - name: orderdb
+        image: mcr.microsoft.com/mssql/server:2017-latest      
+        ports:
+        - containerPort: 1433
+        env:
+        - name: SA_PASSWORD
+          value: SwN12345678
+        - name: ACCEPT_EULA
+          value: "Y"
+
+############### Api ###############
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: orderapi
+spec:
+  selector:
+    matchLabels:
+      app: orderapi
+  template:
+    metadata:
+      labels:
+        app: orderapi
+    spec:
+      containers:
+      - name: orderapi
+        image: orderingapi:latest
+        imagePullPolicy: Never
+        env: 
+        - name: ASPNETCORE_ENVIRONMENT
+          value: Development
+        - name: ConnectionStrings__OrderingConnectionString
+          value: Server=orderdb;Database=OrderDb;User Id=sa;Password=SwN12345678
+        - name: EventBusSettings__HostAddress
+          value: amqp://guest:guest@rabbitmq:5672
+        
+        ports:
+        - containerPort: 80

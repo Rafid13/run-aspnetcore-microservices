@@ -1,0 +1,96 @@
+#####################################################################
+############################# Services ##############################
+#####################################################################
+
+
+############### aggregator ###############
+apiVersion: v1
+kind: Service
+metadata:
+  name: shoppingaggregator
+spec:
+  selector:
+    app: shoppingaggregator
+  ports:
+  - port: 80
+    targetPort: 80
+    nodePort: 30070
+  type: NodePort
+
+############### Api ###############
+
+  
+
+
+#####################################################################
+########################### Deployments #############################
+#####################################################################
+
+
+############### aggregator ###############
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: shoppingaggregator
+spec:
+  selector:
+    matchLabels:
+      app: shoppingaggregator
+  template:
+    metadata:
+      labels:
+        app: shoppingaggregator
+    spec:
+      containers:
+      - name: shoppingaggregator
+        image: shoppingaggregator:latest
+        imagePullPolicy: Never
+        env:
+        - name: ASPNETCORE_ENVIRONMENT
+          value: Development
+
+        - name: ApiSettings__BasketUrl
+          value: http://basketapi
+        - name: ApiSettings__OrderingUrl
+          value: http://orderapi
+        - name: ApiSettings__CatalogUrl
+          value: http://catalogapi
+        
+        ports:
+        - containerPort: 80
+
+
+############### Api ###############
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: basketapi
+spec:
+  selector:
+    matchLabels:
+      app: basketapi
+  template:
+    metadata:
+      labels:
+        app: basketapi
+    spec:
+      containers:
+      - name: basketapi
+        image: basketapi:latest
+        imagePullPolicy: Never
+        env: 
+        - name: ASPNETCORE_ENVIRONMENT
+          value: Development
+        - name: CacheSettings__ConnectionString
+          value: basketdb:6379
+        - name: GrpcSettings__DiscountUrl
+          value: http://discountgrpc
+        - name: EventBusSettings__HostAddress
+          value: amqp://guest:guest@rabbitmq:5672
+        
+        ports:
+        - containerPort: 80
+
+

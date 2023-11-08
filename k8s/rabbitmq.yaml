@@ -13,10 +13,10 @@ spec:
     app: rabbitmq
   ports:
   - name: port1
-    port: 40040
+    port: 5672
     targetPort: 5672
   - name: port2
-    port: 40050
+    port: 15672
     targetPort: 15672
 
 
